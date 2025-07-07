@@ -5,8 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisPassword;
-import org.springframework.data.redis.connection.RedisSentinelConfiguration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import com.experiments.experimentsinjavatemplate.sentinel.SentinelMasterResolver;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,19 +38,19 @@ public class RedisConfig {
     public RedisConnectionFactory redisConnectionFactory() {
         Set<String> sentinels = Stream.of(nodes.split(","))
                 .collect(Collectors.toSet());
-        RedisSentinelConfiguration config = new RedisSentinelConfiguration(master, sentinels);
+
+        // Resolve master address with authentication against Sentinel nodes.
+        SentinelMasterResolver resolver = new SentinelMasterResolver(master, sentinels, sentinelUsername, sentinelPassword);
+        var masterAddr = resolver.resolve();
+
+        RedisStandaloneConfiguration standalone = new RedisStandaloneConfiguration(masterAddr.getHost(), masterAddr.getPort());
         if (!password.isBlank()) {
-            config.setPassword(RedisPassword.of(password));
+            standalone.setPassword(RedisPassword.of(password));
         }
         if (!username.isBlank()) {
-            config.setUsername(username);
+            standalone.setUsername(username);
         }
-        if (!sentinelUsername.isBlank()) {
-            config.setSentinelUsername(sentinelUsername);
-        }
-        if (!sentinelPassword.isBlank()) {
-            config.setSentinelPassword(RedisPassword.of(sentinelPassword));
-        }
-        return new JedisConnectionFactory(config);
+
+        return new JedisConnectionFactory(standalone);
     }
 }
