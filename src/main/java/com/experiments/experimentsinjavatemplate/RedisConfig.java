@@ -24,6 +24,15 @@ public class RedisConfig {
     @Value("${spring.data.redis.password:}")
     private String password;
 
+    @Value("${spring.data.redis.username:}")
+    private String username;
+
+    @Value("${spring.data.redis.sentinel.username:}")
+    private String sentinelUsername;
+
+    @Value("${spring.data.redis.sentinel.password:}")
+    private String sentinelPassword;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         Set<String> sentinels = Stream.of(nodes.split(","))
@@ -31,6 +40,15 @@ public class RedisConfig {
         RedisSentinelConfiguration config = new RedisSentinelConfiguration(master, sentinels);
         if (!password.isBlank()) {
             config.setPassword(RedisPassword.of(password));
+        }
+        if (!username.isBlank()) {
+            config.setUsername(username);
+        }
+        if (!sentinelUsername.isBlank()) {
+            config.setSentinelUsername(sentinelUsername);
+        }
+        if (!sentinelPassword.isBlank()) {
+            config.setSentinelPassword(RedisPassword.of(sentinelPassword));
         }
         return new JedisConnectionFactory(config);
     }
