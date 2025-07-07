@@ -9,5 +9,7 @@ spring:
         nodes:
           - localhost:26379
           - localhost:26380
+        username: username
+        password: password
       # password: yourpassword
       # database: 0
