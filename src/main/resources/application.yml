@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: ExperimentsInJavaTemplate
+  data:
+    redis:
+      client-type: jedis
+      sentinel:
+        master: mymaster
+        nodes:
+          - localhost:26379
+          - localhost:26380
+      # password: yourpassword
+      # database: 0
